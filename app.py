@@ -13,13 +13,33 @@ from database import (
 
 from model import predict_health
 
+# ==========================
+# PAGE CONFIG
+# ==========================
+
 st.set_page_config(
     page_title="Health Prediction Application",
     page_icon="🩺",
-    layout="wide"
+    layout="centered"
 )
 
 st.title("🩺 Health Prediction Application")
+
+st.markdown("""
+AI-powered patient management system with health risk prediction and
+Gemini-generated medical remarks.
+""")
+
+# ==========================
+# DASHBOARD METRIC
+# ==========================
+
+df_count = get_patients_dataframe()
+
+st.metric(
+    "Total Patients",
+    len(df_count)
+)
 
 st.markdown("---")
 
@@ -27,37 +47,43 @@ st.markdown("---")
 # ADD PATIENT
 # ==========================
 
-st.subheader("Add Patient Record")
+st.subheader("➕ Add Patient Record")
 
 with st.form("patient_form"):
 
-    full_name = st.text_input("Full Name")
+    col1, col2 = st.columns(2)
 
-    dob = st.date_input(
-        "Date of Birth",
-        min_value=date(1900, 1, 1),
-        max_value=date.today()
-    )
+    with col1:
 
-    email = st.text_input("Email Address")
+        full_name = st.text_input("Full Name")
 
-    glucose = st.number_input(
-        "Glucose",
-        min_value=0.0,
-        step=0.1
-    )
+        dob = st.date_input(
+            "Date of Birth",
+            min_value=date(1900, 1, 1),
+            max_value=date.today()
+        )
 
-    haemoglobin = st.number_input(
-        "Haemoglobin",
-        min_value=0.0,
-        step=0.1
-    )
+        glucose = st.number_input(
+            "Glucose",
+            min_value=0.0,
+            step=0.1
+        )
 
-    cholesterol = st.number_input(
-        "Cholesterol",
-        min_value=0.0,
-        step=0.1
-    )
+    with col2:
+
+        email = st.text_input("Email Address")
+
+        haemoglobin = st.number_input(
+            "Haemoglobin",
+            min_value=0.0,
+            step=0.1
+        )
+
+        cholesterol = st.number_input(
+            "Cholesterol",
+            min_value=0.0,
+            step=0.1
+        )
 
     submit_button = st.form_submit_button(
         "Predict & Save"
@@ -84,11 +110,15 @@ if submit_button:
         email
     ):
 
-        st.error("Enter a valid email address.")
+        st.error(
+            "Enter a valid email address."
+        )
 
     elif email_exists(email):
 
-        st.error("Email already exists.")
+        st.error(
+            "Email already exists."
+        )
 
     else:
 
@@ -112,8 +142,12 @@ if submit_button:
             "Patient record saved successfully."
         )
 
+        st.success(
+            "AI Health Remark Generated"
+        )
+
         st.info(
-            f"Prediction: {remarks}"
+            remarks
         )
 
 # ==========================
@@ -122,7 +156,7 @@ if submit_button:
 
 st.markdown("---")
 
-st.subheader("Patient Records")
+st.subheader("📋 Patient Records")
 
 df = get_patients_dataframe()
 
@@ -130,7 +164,9 @@ if not df.empty:
 
     st.dataframe(
         df,
-        width="stretch"
+        width="stretch",
+        height=300,
+        hide_index=True
     )
 
 else:
@@ -145,7 +181,7 @@ else:
 
 st.markdown("---")
 
-st.subheader("Update Patient Record")
+st.subheader("✏️ Update Patient Record")
 
 update_id = st.number_input(
     "Enter Patient ID to Update",
@@ -156,108 +192,58 @@ update_id = st.number_input(
 
 if st.button("Load Patient"):
 
-    patient = get_patient_by_id(
-        update_id
-    )
+    patient = get_patient_by_id(update_id)
 
     if patient:
 
-        st.session_state[
-            "patient_loaded"
-        ] = True
-
-        st.session_state[
-            "patient_id"
-        ] = patient.id
-
-        st.session_state[
-            "full_name"
-        ] = patient.full_name
-
-        st.session_state[
-            "dob"
-        ] = patient.dob
-
-        st.session_state[
-            "email"
-        ] = patient.email
-
-        st.session_state[
-            "glucose"
-        ] = patient.glucose
-
-        st.session_state[
-            "haemoglobin"
-        ] = patient.haemoglobin
-
-        st.session_state[
-            "cholesterol"
-        ] = patient.cholesterol
+        st.session_state["patient_loaded"] = True
+        st.session_state["patient_id"] = patient.id
+        st.session_state["full_name"] = patient.full_name
+        st.session_state["dob"] = patient.dob
+        st.session_state["email"] = patient.email
+        st.session_state["glucose"] = patient.glucose
+        st.session_state["haemoglobin"] = patient.haemoglobin
+        st.session_state["cholesterol"] = patient.cholesterol
 
     else:
 
-        st.error(
-            "Patient not found."
-        )
+        st.error("Patient not found.")
 
-if st.session_state.get(
-    "patient_loaded",
-    False
-):
+if st.session_state.get("patient_loaded", False):
 
-    st.markdown(
-        "### Edit Patient Details"
-    )
+    st.markdown("### Edit Patient Details")
 
     new_name = st.text_input(
         "Full Name",
-        value=st.session_state[
-            "full_name"
-        ],
+        value=st.session_state["full_name"],
         key="edit_name"
     )
 
     new_email = st.text_input(
         "Email",
-        value=st.session_state[
-            "email"
-        ],
+        value=st.session_state["email"],
         key="edit_email"
     )
 
     new_glucose = st.number_input(
         "Glucose",
-        value=float(
-            st.session_state[
-                "glucose"
-            ]
-        ),
+        value=float(st.session_state["glucose"]),
         key="edit_glucose"
     )
 
     new_haemoglobin = st.number_input(
         "Haemoglobin",
-        value=float(
-            st.session_state[
-                "haemoglobin"
-            ]
-        ),
+        value=float(st.session_state["haemoglobin"]),
         key="edit_haemoglobin"
     )
 
     new_cholesterol = st.number_input(
         "Cholesterol",
-        value=float(
-            st.session_state[
-                "cholesterol"
-            ]
-        ),
+        value=float(st.session_state["cholesterol"]),
         key="edit_cholesterol"
     )
 
-    if st.button(
-        "Update Record"
-    ):
+    if st.button("Update Record"):
 
         remarks = predict_health(
             new_glucose,
@@ -266,13 +252,9 @@ if st.session_state.get(
         )
 
         update_patient(
-            st.session_state[
-                "patient_id"
-            ],
+            st.session_state["patient_id"],
             new_name,
-            st.session_state[
-                "dob"
-            ],
+            st.session_state["dob"],
             new_email,
             new_glucose,
             new_haemoglobin,
@@ -284,9 +266,7 @@ if st.session_state.get(
             "Patient updated successfully."
         )
 
-        st.session_state[
-            "patient_loaded"
-        ] = False
+        st.session_state["patient_loaded"] = False
 
         st.rerun()
 
@@ -296,9 +276,7 @@ if st.session_state.get(
 
 st.markdown("---")
 
-st.subheader(
-    "Delete Patient Record"
-)
+st.subheader("🗑️ Delete Patient Record")
 
 patient_id = st.number_input(
     "Enter Patient ID",
@@ -307,13 +285,9 @@ patient_id = st.number_input(
     key="delete_id"
 )
 
-if st.button(
-    "Delete Record"
-):
+if st.button("Delete Record"):
 
-    delete_patient(
-        patient_id
-    )
+    delete_patient(patient_id)
 
     st.success(
         "Record deleted successfully."
