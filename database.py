@@ -124,8 +124,23 @@ def delete_patient(patient_id):
     db.close()
 
 
+# Check if Email Already Exists
+def email_exists(email):
+
+    db = get_db()
+
+    patient = db.query(Patient).filter(
+        Patient.email == email
+    ).first()
+
+    db.close()
+
+    return patient is not None
+
+
 # Convert Data to DataFrame for Streamlit
 def get_patients_dataframe():
+
     patients = get_all_patients()
 
     data = []
