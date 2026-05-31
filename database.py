@@ -67,7 +67,7 @@ def add_patient(
     db.close()
 
 
-# READ
+# READ ALL
 def get_all_patients():
     db = get_db()
 
@@ -76,6 +76,20 @@ def get_all_patients():
     db.close()
 
     return patients
+
+
+# READ BY ID
+def get_patient_by_id(patient_id):
+
+    db = get_db()
+
+    patient = db.query(Patient).filter(
+        Patient.id == patient_id
+    ).first()
+
+    db.close()
+
+    return patient
 
 
 # UPDATE
@@ -111,6 +125,7 @@ def update_patient(
 
 # DELETE
 def delete_patient(patient_id):
+
     db = get_db()
 
     patient = db.query(Patient).filter(
@@ -124,7 +139,7 @@ def delete_patient(patient_id):
     db.close()
 
 
-# Check if Email Already Exists
+# CHECK EMAIL EXISTS
 def email_exists(email):
 
     db = get_db()
@@ -138,7 +153,7 @@ def email_exists(email):
     return patient is not None
 
 
-# Convert Data to DataFrame for Streamlit
+# CONVERT TO DATAFRAME
 def get_patients_dataframe():
 
     patients = get_all_patients()
@@ -155,7 +170,7 @@ def get_patients_dataframe():
                 "Glucose": patient.glucose,
                 "Haemoglobin": patient.haemoglobin,
                 "Cholesterol": patient.cholesterol,
-                "Remarks": patient.remarks,
+                "Remarks": patient.remarks
             }
         )
 
