@@ -15,7 +15,7 @@ Base = declarative_base()
 class Patient(Base):
     __tablename__ = "patients"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     full_name = Column(String, nullable=False)
     dob = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
@@ -25,9 +25,87 @@ class Patient(Base):
     remarks = Column(String)
 
 
-# Create session factory
+# Session Factory
 SessionLocal = sessionmaker(bind=engine)
 
 
-# Create tables in database
+# Create Tables
 Base.metadata.create_all(bind=engine)
+
+
+# Get Database Session
+def get_db():
+    return SessionLocal()
+
+
+# CREATE
+def add_patient(full_name, dob, email, glucose,
+                haemoglobin, cholesterol, remarks):
+
+    db = get_db()
+
+    patient = Patient(
+        full_name=full_name,
+        dob=dob,
+        email=email,
+        glucose=glucose,
+        haemoglobin=haemoglobin,
+        cholesterol=cholesterol,
+        remarks=remarks
+    )
+
+    db.add(patient)
+    db.commit()
+    db.close()
+
+
+# READ
+def get_all_patients():
+
+    db = get_db()
+    patients = db.query(Patient).all()
+    db.close()
+
+    return patients
+
+
+# UPDATE
+def update_patient(patient_id, full_name, dob, email,
+                   glucose, haemoglobin,
+                   cholesterol, remarks):
+
+    db = get_db()
+
+    patient = db.query(Patient).filter(
+        Patient.id == patient_id
+    ).first()
+
+    if patient:
+
+        patient.full_name = full_name
+        patient.dob = dob
+        patient.email = email
+        patient.glucose = glucose
+        patient.haemoglobin = haemoglobin
+        patient.cholesterol = cholesterol
+        patient.remarks = remarks
+
+        db.commit()
+
+    db.close()
+
+
+# DELETE
+def delete_patient(patient_id):
+
+    db = get_db()
+
+    patient = db.query(Patient).filter(
+        Patient.id == patient_id
+    ).first()
+
+    if patient:
+        db.delete(patient)
+        db.commit()
+
+    db.close()
