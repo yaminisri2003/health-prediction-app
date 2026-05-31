@@ -1,3 +1,5 @@
+import pandas as pd
+
 from sqlalchemy import create_engine, Column, Integer, String, Float
 from sqlalchemy.orm import declarative_base, sessionmaker
 
@@ -39,9 +41,15 @@ def get_db():
 
 
 # CREATE
-def add_patient(full_name, dob, email, glucose,
-                haemoglobin, cholesterol, remarks):
-
+def add_patient(
+    full_name,
+    dob,
+    email,
+    glucose,
+    haemoglobin,
+    cholesterol,
+    remarks
+):
     db = get_db()
 
     patient = Patient(
@@ -61,19 +69,26 @@ def add_patient(full_name, dob, email, glucose,
 
 # READ
 def get_all_patients():
-
     db = get_db()
+
     patients = db.query(Patient).all()
+
     db.close()
 
     return patients
 
 
 # UPDATE
-def update_patient(patient_id, full_name, dob, email,
-                   glucose, haemoglobin,
-                   cholesterol, remarks):
-
+def update_patient(
+    patient_id,
+    full_name,
+    dob,
+    email,
+    glucose,
+    haemoglobin,
+    cholesterol,
+    remarks
+):
     db = get_db()
 
     patient = db.query(Patient).filter(
@@ -81,7 +96,6 @@ def update_patient(patient_id, full_name, dob, email,
     ).first()
 
     if patient:
-
         patient.full_name = full_name
         patient.dob = dob
         patient.email = email
@@ -97,7 +111,6 @@ def update_patient(patient_id, full_name, dob, email,
 
 # DELETE
 def delete_patient(patient_id):
-
     db = get_db()
 
     patient = db.query(Patient).filter(
@@ -109,3 +122,26 @@ def delete_patient(patient_id):
         db.commit()
 
     db.close()
+
+
+# Convert Data to DataFrame for Streamlit
+def get_patients_dataframe():
+    patients = get_all_patients()
+
+    data = []
+
+    for patient in patients:
+        data.append(
+            {
+                "ID": patient.id,
+                "Full Name": patient.full_name,
+                "Date of Birth": patient.dob,
+                "Email": patient.email,
+                "Glucose": patient.glucose,
+                "Haemoglobin": patient.haemoglobin,
+                "Cholesterol": patient.cholesterol,
+                "Remarks": patient.remarks,
+            }
+        )
+
+    return pd.DataFrame(data)
