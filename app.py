@@ -245,30 +245,57 @@ if st.session_state.get("patient_loaded", False):
 
     if st.button("Update Record"):
 
-        remarks = predict_health(
-            new_glucose,
-            new_haemoglobin,
-            new_cholesterol
-        )
+        if not new_name.strip():
 
-        update_patient(
-            st.session_state["patient_id"],
-            new_name,
-            st.session_state["dob"],
-            new_email,
-            new_glucose,
-            new_haemoglobin,
-            new_cholesterol,
-            remarks
-        )
+            st.error("Full Name is required.")
 
-        st.success(
-            "Patient updated successfully."
-        )
+        elif not new_email.strip():
 
-        st.session_state["patient_loaded"] = False
+            st.error("Email Address is required.")
 
-        st.rerun()
+        elif not re.match(
+            r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$",
+            new_email
+        ):
+
+            st.error(
+                "Enter a valid email address."
+            )
+
+        else:
+
+            remarks = predict_health(
+                new_glucose,
+                new_haemoglobin,
+                new_cholesterol
+            )
+
+            update_patient(
+                st.session_state["patient_id"],
+                new_name,
+                st.session_state["dob"],
+                new_email,
+                new_glucose,
+                new_haemoglobin,
+                new_cholesterol,
+                remarks
+            )
+
+            st.success(
+                "Patient updated successfully."
+            )
+
+            st.success(
+                "AI Health Remark Regenerated"
+            )
+
+            st.info(
+                remarks
+            )
+
+            st.session_state["patient_loaded"] = False
+
+            st.rerun()
 
 # ==========================
 # DELETE PATIENT
@@ -287,10 +314,18 @@ patient_id = st.number_input(
 
 if st.button("Delete Record"):
 
-    delete_patient(patient_id)
+    deleted = delete_patient(patient_id)
 
-    st.success(
-        "Record deleted successfully."
-    )
+    if deleted:
 
-    st.rerun()
+        st.success(
+            "Record deleted successfully."
+        )
+
+        st.rerun()
+
+    else:
+
+        st.error(
+            "No patient found with that ID."
+        )
