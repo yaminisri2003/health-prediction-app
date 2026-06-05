@@ -133,10 +133,14 @@ def delete_patient(patient_id):
     ).first()
 
     if patient:
+
         db.delete(patient)
         db.commit()
+        db.close()
+        return True
 
     db.close()
+    return False
 
 
 # CHECK EMAIL EXISTS

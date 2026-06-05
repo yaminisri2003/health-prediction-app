@@ -305,27 +305,40 @@ st.markdown("---")
 
 st.subheader("🗑️ Delete Patient Record")
 
-patient_id = st.number_input(
+if st.session_state.get("delete_success"):
+    st.success("Record deleted successfully.")
+    st.session_state["delete_success"] = False
+
+patient_id_input = st.text_input(
     "Enter Patient ID",
-    min_value=1,
-    step=1,
-    key="delete_id"
+    key="delete_id_input"
 )
 
-if st.button("Delete Record"):
+if st.button("Delete Record", key="delete_btn"):
 
-    deleted = delete_patient(patient_id)
+    if not patient_id_input.strip():
 
-    if deleted:
+        st.error("Please enter a Patient ID.")
 
-        st.success(
-            "Record deleted successfully."
-        )
+    elif not patient_id_input.strip().isdigit():
 
-        st.rerun()
+        st.error("Patient ID must be a number.")
 
     else:
 
-        st.error(
-            "No patient found with that ID."
+        st.session_state["selected_delete_id"] = int(
+            patient_id_input.strip()
         )
+
+        deleted = delete_patient(
+            st.session_state["selected_delete_id"]
+        )
+
+        if deleted:
+
+            st.session_state["delete_success"] = True
+            st.rerun()
+
+        else:
+
+            st.error("No patient found with that ID.")
